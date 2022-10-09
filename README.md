@@ -4,4 +4,4 @@
 
 Простой запуск приложения: 
 
-<strong>mvn clean install spring-boot:run</strong> в basedir проекта.
+<strong>mvn clean install spring-boot:run</strong> в basedir проекта. Должны быть установлен maven и docker-compose.
