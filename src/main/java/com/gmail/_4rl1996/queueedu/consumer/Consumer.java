@@ -2,7 +2,7 @@ package com.gmail._4rl1996.queueedu.consumer;
 
 import com.gmail._4rl1996.queueedu.message.TestMessage;
 import lombok.RequiredArgsConstructor;
-import org.springframework.jms.annotation.JmsListener;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.messaging.Message;
 import org.springframework.stereotype.Service;
 
@@ -11,12 +11,12 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class Consumer {
 
-    @JmsListener(destination = "${rabbit.properties.queueName}")
+    @RabbitListener(queues = "${rabbit.properties.queueName}")
     public void onMessage(Message<TestMessage> message) {
-        System.out.println(new StringBuilder().append("\n\nMessage was received.\nMessageHeaders are:\n")
-                .append(message.getHeaders())
-                .append("\nMessage Payload is:\n")
-                .append(message.getPayload()));
+        TestMessage payload = message.getPayload();
+        System.out.println("\n\nMessage was received.\nMessageHeaders are:\n" +
+                message.getHeaders() +
+                "\nMessage Payload is:\n" +
+                payload);
     }
-
 }

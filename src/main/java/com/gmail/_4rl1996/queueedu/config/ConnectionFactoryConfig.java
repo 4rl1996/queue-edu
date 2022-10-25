@@ -1,16 +1,16 @@
 package com.gmail._4rl1996.queueedu.config;
 
 import com.gmail._4rl1996.queueedu.config.properties.ApplicationProperties;
-import com.rabbitmq.jms.admin.RMQConnectionFactory;
 import lombok.RequiredArgsConstructor;
+import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+import org.springframework.amqp.rabbit.core.RabbitAdmin;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.jms.annotation.EnableJms;
-import org.springframework.jms.core.JmsTemplate;
 
-import javax.jms.ConnectionFactory;
 
-@EnableJms
 @Configuration
 @RequiredArgsConstructor
 public class ConnectionFactoryConfig {
@@ -18,22 +18,21 @@ public class ConnectionFactoryConfig {
     private final ApplicationProperties applicationProperties;
 
     @Bean
-    public ConnectionFactory connectionFactory() {
-
-        RMQConnectionFactory connectionFactory = new RMQConnectionFactory();
-        connectionFactory.setUsername(applicationProperties.getUsername());
-        connectionFactory.setPassword(applicationProperties.getPassword());
-        connectionFactory.setVirtualHost(applicationProperties.getVirtualHost());
-        connectionFactory.setHost(applicationProperties.getHost());
-        connectionFactory.setPort(applicationProperties.getPort());
-        return connectionFactory;
+    public RabbitAdmin rabbitAdmin(ConnectionFactory connectionFactory) {
+        final var rabbitAdmin = new RabbitAdmin(connectionFactory);
+        rabbitAdmin.declareQueue(new Queue(applicationProperties.getQueueName()));
+        return rabbitAdmin;
     }
 
     @Bean
-    public JmsTemplate jmsTemplate(ConnectionFactory connectionFactory) {
+    public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
+        final var rabbitTemplate = new RabbitTemplate(connectionFactory);
+        rabbitTemplate.setMessageConverter(producerJackson2MessageConverter());
+        return rabbitTemplate;
+    }
 
-        JmsTemplate jmsTemplate = new JmsTemplate(connectionFactory);
-        jmsTemplate.setDefaultDestinationName(applicationProperties.getQueueName());
-        return jmsTemplate;
+    @Bean
+    public Jackson2JsonMessageConverter producerJackson2MessageConverter() {
+        return new Jackson2JsonMessageConverter();
     }
 }
